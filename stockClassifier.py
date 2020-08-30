@@ -3,20 +3,21 @@ import sys
 import os
 from datetime import date
 import matplotlib.pyplot as plt
+from operator import itemgetter
 
+# Finds the difference between two stocks' histories
 def diffCalc(g1, g2):
     diff = 0
     minLength = min(len(g1),len(g2))
     if minLength ==0:
         print ( "DIVISION BY 0 ERROR")
-        #return 0
     for ele in range(minLength):
         diff+= (g2[len(g2)-1-ele][1] - g1[len(g1)-1-ele][1])**2
 
     diff = diff**(1/2)
     return diff
 
-
+# Adds two stock histories
 def sumCalc(g1, g2):
     sum = []
     minLength = min(len(g1),len(g2))
@@ -24,6 +25,7 @@ def sumCalc(g1, g2):
         sum.append([g1[len(g1)-1-ele][0] ,(g2[len(g2)-1-ele][1] + g1[len(g1)-1-ele][1])])
     return sum
 
+# Initializes the first K centroids to the first K data points
 def initCentroids(data, K):
     centroids = []
     for k,key in enumerate(data):
@@ -35,6 +37,9 @@ def initCentroids(data, K):
         plt.show()
     return centroids
 
+# Find which data points are closest to which newCentroids
+# Returns list of lists, the inner lists are a list of stock data points
+# The index of the outer lists correspond to the centroid that is closest to that group of data
 def findCentroidGroups(data, centroids, K):
     groupSets = [[] for c in centroids]
     for d in data.keys():
@@ -53,6 +58,7 @@ def findCentroidGroups(data, centroids, K):
         groupSets[minCIdx].append([d, curDat])
     return groupSets
 
+# calculate the average cost of the current centroids and data sets
 def calcCost (groupSets, centroids, K):
     aveDiff = 0
     for k in range(K):
@@ -64,7 +70,7 @@ def calcCost (groupSets, centroids, K):
     aveDiff /= K
     return aveDiff
 
-
+# find the next centroids by averaging the grouped data sets
 def calcNextCentroids(dataGrouped, K):
     newCentroids = []
     for g in dataGrouped:
@@ -79,6 +85,7 @@ def calcNextCentroids(dataGrouped, K):
         newCentroids.append(aveCent)
     return newCentroids
 
+# Performs the K-means clustering algo
 def KMeanCluster(data, minK, maxK, numRounds):
     if len(data) < maxK :
         print("not enough data ")
@@ -96,7 +103,10 @@ def KMeanCluster(data, minK, maxK, numRounds):
             plt.plot(*zip(*centroid))
             plt.show()
 
-
+# read in all txt files in the dir directory
+# Stores them in a hashmap with the file name as the key and the data as the value
+#The data is a list of lists
+# Each nested list had 2 values, the date (in days) and the ave price (average of the high and low that day)
 def readFiles(dir):
     dict = {}
     originDay = date(1,1,1)
@@ -117,6 +127,13 @@ def readFiles(dir):
                 # for i in range(1,len(split)):
                 #     reformedSplit.append(float(split[i]))
                 curFileData.append(reformedSplit)
+        maxPrice = max(curFileData, key = itemgetter(1))[1]
+        print(maxPrice)
+        for i in range(len(curFileData)):
+            curFileData[i] = [curFileData[i][0], curFileData[i][1]/maxPrice]
+        #plt.plot(*zip(*curFileData))
+        #plt.show()
+        #print(curFileData)
         dict[fileName] = curFileData
     return dict
 
