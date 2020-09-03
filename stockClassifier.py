@@ -1,9 +1,43 @@
-import numpy
+import numpy as np
 import sys
 import os
 from datetime import date
 import matplotlib.pyplot as plt
 from operator import itemgetter
+
+def hypothesis(theta, xVal):
+
+    return np.sum(np.multiply(theta, xVal))
+
+def linRegression (data, deg, numP):
+    theta = np.array([1 for d in range(deg+1)])
+    m = len(data)
+    lowX = data[0][0]
+    highX = data[len(data)-1][0]
+    #print(data)
+    #print(deg)
+    x = np.array([[ele[0]**p for p in range(deg+1)] for ele in data])
+    print(x)
+    y = np.array([ele[1] for ele in data])
+    h = np.array([hypothesis(theta, ele) for ele in x])
+    diffHY = h - y
+    toSums =  np.transpose(np.array([(diffHY[i] * x[i]) for i in range(len(diffHY))]))
+    sums = np.array([np.sum(curArr) for curArr in toSums])
+    a = 0.001
+    numIterations = 700
+    for i in range(numIterations):
+        #newTheta = np.array([0 for d in range(deg+1)])
+        newTheta = theta - a/m*sums
+        #print calcCost()
+    newData = []
+    for xVal in range(lowX, highX, (highX-lowX)//numP):
+        newData.append([xVal, hypothesis(theta, xVal)])
+    return theta, newData
+
+
+
+
+
 
 # Finds the difference between two stocks' histories
 def diffCalc(g1, g2):
@@ -95,7 +129,9 @@ def KMeanCluster(data, minK, maxK, numRounds):
         centroids = initCentroids(data, k)
         groupedData = None
         for r in range(numRounds):
+            print("centroids K: " + str(len(centroids)))
             groupedData = findCentroidGroups(data, centroids, k)
+            print("groupedData K: " + str(len(groupedData)))
             centroids = calcNextCentroids(groupedData, k)
         print("Showing centroids for K = " + str(k))
         print("cost " + str(calcCost(groupedData, centroids, k)))
@@ -114,33 +150,42 @@ def readFiles(dir):
         inFile = open(dir+"\\"+fileName, "r")
         curFileData =[]
         allLines = inFile.readlines()
-        if len(allLines)<366*12:
+        daysInYear = 365.25
+        totTime = int(daysInYear*11)
+        if len(allLines)<totTime:
             continue
-        for line in allLines:
+        for l in reversed(range(totTime)):
+            line = allLines[len(allLines)-1-l]
             if line[0] != "D":
                 line = line[:len(line)-1]
                 split = line.split(",")
                 dateSplit = split[0].split("-")
                 curDate = date(int(dateSplit[0]), int(dateSplit[1]), int(dateSplit[2]))
-                curDay = (curDate-originDay).days
+                curDay = totTime - 1 -l #(curDate-originDay).days
                 reformedSplit = [curDay, (float(split[2]) + float(split[3]))/2]
                 # for i in range(1,len(split)):
                 #     reformedSplit.append(float(split[i]))
                 curFileData.append(reformedSplit)
         maxPrice = max(curFileData, key = itemgetter(1))[1]
-        print(maxPrice)
+        #print(maxPrice)
         for i in range(len(curFileData)):
             curFileData[i] = [curFileData[i][0], curFileData[i][1]/maxPrice]
-        #plt.plot(*zip(*curFileData))
-        #plt.show()
-        #print(curFileData)
+        plt.plot(*zip(*curFileData))
+
+        curThetas, summaryData = linRegression(curFileData, 10, 100)
+
+        plt.plot(*zip(*summaryData))
+        print(curThetas)
+
+        plt.show()
+
         dict[fileName] = curFileData
     return dict
 
 if __name__ == "__main__":
     dir = sys.argv[1]
     data = readFiles(dir)
-    KMeanCluster(data, 2, 5, 15)
+    KMeanCluster(data, 2, 3, 10)
     #for d in data.keys():
         #print(data[d])
     # for dSet in data.keys():
