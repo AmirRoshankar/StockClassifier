@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from operator import itemgetter
 
 def hypothesis(theta, xVal):
-
     return np.sum(np.multiply(theta, xVal))
 
 def linRegression (data, deg, numP):
@@ -33,11 +32,6 @@ def linRegression (data, deg, numP):
     for xVal in range(lowX, highX, (highX-lowX)//numP):
         newData.append([xVal, hypothesis(theta, xVal)])
     return theta, newData
-
-
-
-
-
 
 # Finds the difference between two stocks' histories
 def diffCalc(g1, g2):
