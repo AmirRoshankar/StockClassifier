@@ -16,7 +16,7 @@ function get_SandP_companies(){
         console.log(json);
         // Save to a json file
         companies = json;
-        fs.writeFile('S&P500companies.json', JSON.stringify(json), (err)=>{
+        fs.writeFile('SandP500companies.json', JSON.stringify(json), (err)=>{
             if(err) throw err;
             console.log('saved');
         });
